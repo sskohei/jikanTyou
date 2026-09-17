@@ -45,6 +45,7 @@ app.use("/api/auth/*", async (c, next) => {
   }
   return next();
 });
+app.get("/api/auth/config", (c) => ok(c, { googleClientId: c.env.GOOGLE_CLIENT_ID }));
 app.all("/api/auth/*", (c) => createAuth(c.env).handler(c.req.raw));
 
 app.get("/api/dev-preview", (c) => {

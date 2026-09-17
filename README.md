@@ -40,8 +40,13 @@ DEV_PREVIEW_ENABLED="true"
 1. Google Cloud ConsoleでOAuthクライアント（Webアプリケーション）を作成します。
 2. 承認済みのリダイレクトURIに、次を追加します。
    - ローカル: `http://localhost:5173/api/auth/callback/google`
+   - `127.0.0.1` で開く場合: `http://127.0.0.1:5173/api/auth/callback/google`
    - 本番: `https://あなたのドメイン/api/auth/callback/google`
-3. `.dev.vars` に次を設定します。
+3. 承認済みのJavaScript生成元に、次を追加します。
+   - ローカル: `http://localhost:5173`
+   - `127.0.0.1` で開く場合: `http://127.0.0.1:5173`
+   - 本番: `https://あなたのドメイン`
+4. `.dev.vars` に次を設定します。
 
 ```dotenv
 BETTER_AUTH_SECRET="32文字以上のランダムな秘密値"
@@ -49,6 +54,8 @@ BETTER_AUTH_URL="http://localhost:5173"
 GOOGLE_CLIENT_ID="..."
 GOOGLE_CLIENT_SECRET="..."
 ```
+
+OAuth開始後は、`localhost` と `127.0.0.1` を切り替えないでください。これらはブラウザ上で別のCookie保存先として扱われます。
 
 Better Authのschemaは公式CLIで生成した `src/server/db/auth-schema.ts` を使用しています。認証設定を変えた場合は、次のコマンドで再生成し、Drizzle migrationを作り直して確認してください。
 
