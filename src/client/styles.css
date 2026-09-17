@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Noto Sans JP", "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
+  --color-ink: #172033;
+  --color-muted: #68738a;
+  --color-brand: #635bff;
+  --color-brand-dark: #5048e5;
+  --color-canvas: #f7f8fc;
+  --color-line: #e8eaf1;
+}
+
+@layer base {
+  * { box-sizing: border-box; }
+  body { @apply m-0 bg-canvas font-sans text-ink antialiased; }
+  button, input, select { font: inherit; }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+}

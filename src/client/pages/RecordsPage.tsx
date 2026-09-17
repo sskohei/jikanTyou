@@ -1,0 +1,21 @@
+import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { useState } from "react";
+import type { ActivityDto, TimeEntryDto } from "../../shared/types";
+import { Button, Card, Empty, Input, PageTitle, Select } from "../components/ui";
+import { useApi } from "../hooks";
+import { apiRequest, formatSeconds, jsonBody } from "../lib/api";
+import { dateInJapan, timeInJapan, todayInJapan } from "../lib/dates";
+
+const initialForm = { activityId: "", date: todayInJapan(), startTime: "09:00", endTime: "10:00" };
+type Form = typeof initialForm;
+
+export function RecordsPage() {
+  const activities = useApi<ActivityDto[]>("/api/activities");
+  const records = useApi<TimeEntryDto[]>("/api/time-entries");
+  const [form, setForm] = useState<Form>(initialForm); const [editing, setEditing] = useState<string | null>(null); const [error, setError] = useState("");
+  function set<K extends keyof Form>(key: K, value: Form[K]) { setForm((old) => ({ ...old, [key]: value })); }
+  async function save() { setError(""); if (!form.activityId) { setError("活動を選択してください。"); return; } try { await apiRequest(editing ? `/api/time-entries/${editing}` : "/api/time-entries", { ...jsonBody(form), method: editing ? "PATCH" : "POST" }); setForm({ ...initialForm, activityId: form.activityId }); setEditing(null); records.reload(); } catch (reason) { setError(reason instanceof Error ? reason.message : "保存できませんでした。"); } }
+  function edit(entry: TimeEntryDto) { setEditing(entry.id); setForm({ activityId: entry.activityId, date: new Date(entry.startedAt * 1000).toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" }), startTime: timeInJapan(entry.startedAt), endTime: entry.endedAt ? timeInJapan(entry.endedAt) : timeInJapan(entry.startedAt) }); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  async function remove(id: string) { if (window.confirm("この記録を削除しますか？")) { await apiRequest(`/api/time-entries/${id}`, { method: "DELETE" }); records.reload(); } }
+  return <><PageTitle title="記録" eyebrow="時間を残す"><span className="text-sm text-muted">タイマー以外の時間も追加できます</span></PageTitle><Card className="mb-5"><div className="mb-4 flex items-center justify-between"><h2 className="font-black">{editing ? "記録を編集" : "記録を追加"}</h2>{editing && <Button variant="ghost" className="size-9 min-h-0 p-0" onClick={() => { setEditing(null); setForm(initialForm); }}><X size={18} /></Button>}</div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"><label className="text-xs font-bold text-muted">活動<Select value={form.activityId} onChange={(e) => set("activityId", e.target.value)} className="mt-1"><option value="">選択してください</option>{activities.data?.map((activity) => <option key={activity.id} value={activity.id}>{activity.name}</option>)}</Select></label><label className="text-xs font-bold text-muted">日付<Input type="date" value={form.date} onChange={(e) => set("date", e.target.value)} className="mt-1" /></label><label className="text-xs font-bold text-muted">開始時刻<Input type="time" value={form.startTime} onChange={(e) => set("startTime", e.target.value)} className="mt-1" /></label><label className="text-xs font-bold text-muted">終了時刻<Input type="time" value={form.endTime} onChange={(e) => set("endTime", e.target.value)} className="mt-1" /></label></div>{error && <p className="mt-3 text-sm text-red-600">{error}</p>}<Button className="mt-4" onClick={() => void save()}><Plus size={17} className="mr-2" />{editing ? "変更を保存" : "記録を保存"}</Button></Card><Card><h2 className="mb-4 font-black">最近の記録</h2>{records.data?.length ? <div className="divide-y divide-line">{records.data.map((entry) => <div key={entry.id} className="flex items-center justify-between gap-3 py-4 first:pt-0"><div><p className="font-bold">{entry.activityName}</p><p className="mt-1 text-xs text-muted">{dateInJapan(entry.startedAt)}　{timeInJapan(entry.startedAt)} - {entry.endedAt ? timeInJapan(entry.endedAt) : "記録中"}</p></div><div className="flex items-center gap-2"><span className="text-sm font-bold">{formatSeconds(entry.durationSeconds)}</span><Button variant="ghost" className="size-8 min-h-0 p-0" onClick={() => edit(entry)}><Pencil size={15} /></Button><Button variant="ghost" className="size-8 min-h-0 p-0 text-red-500 hover:bg-red-50" onClick={() => void remove(entry.id)}><Trash2 size={15} /></Button></div></div>)}</div> : <Empty>まだ記録がありません。タイマーを使うか、上のフォームから追加してください。</Empty>}</Card></>;
+}

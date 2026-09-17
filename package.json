@@ -1,0 +1,51 @@
+{
+  "name": "jikan-cho",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "pnpm build && wrangler deploy",
+    "typecheck": "tsc -b",
+    "test": "vitest run --config vitest.config.ts",
+    "test:watch": "vitest --config vitest.config.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply jikan-cho-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply jikan-cho-db --remote",
+    "auth:generate": "npx --yes auth@latest generate --adapter drizzle --dialect sqlite --output src/server/db/auth-schema.ts -y"
+  },
+  "dependencies": {
+    "@better-auth/drizzle-adapter": "latest",
+    "@hono/zod-validator": "latest",
+    "@tanstack/react-query": "latest",
+    "better-auth": "latest",
+    "date-fns": "latest",
+    "date-fns-tz": "latest",
+    "drizzle-orm": "latest",
+    "hono": "latest",
+    "lucide-react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-router-dom": "latest",
+    "recharts": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "latest",
+    "@cloudflare/workers-types": "latest",
+    "@eslint/js": "latest",
+    "@tailwindcss/vite": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@types/node": "latest",
+    "@vitejs/plugin-react": "latest",
+    "drizzle-kit": "latest",
+    "tailwindcss": "latest",
+    "typescript": "latest",
+    "vite": "latest",
+    "vitest": "latest",
+    "wrangler": "latest"
+  }
+}
