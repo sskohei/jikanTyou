@@ -2,12 +2,12 @@
 
 @theme {
   --font-sans: "Noto Sans JP", "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
-  --color-ink: #172033;
-  --color-muted: #68738a;
-  --color-brand: #635bff;
-  --color-brand-dark: #5048e5;
-  --color-canvas: #f7f8fc;
-  --color-line: #e8eaf1;
+  --color-ink: #1d1b20;
+  --color-muted: #49454f;
+  --color-brand: #6750a4;
+  --color-brand-dark: #4f378b;
+  --color-canvas: #fef7ff;
+  --color-line: #cac4d0;
 }
 
 @layer base {

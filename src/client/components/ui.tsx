@@ -1,31 +1,41 @@
-import type { ButtonHTMLAttributes, InputHTMLAttributes, PropsWithChildren, ReactElement, SelectHTMLAttributes } from "react";
+import MuiButton, { type ButtonProps as MuiButtonProps } from "@mui/material/Button";
+import FormControl from "@mui/material/FormControl";
+import LinearProgress from "@mui/material/LinearProgress";
+import NativeSelect, { type NativeSelectProps } from "@mui/material/NativeSelect";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import Paper, { type PaperProps } from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
+import type { InputHTMLAttributes, PropsWithChildren, ReactElement } from "react";
 
 const cx = (...values: Array<string | false | undefined>) => values.filter(Boolean).join(" ");
 
-export function Button({ className, variant = "primary", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "ghost" | "danger" }): ReactElement {
-  return <button className={cx("inline-flex min-h-10 items-center justify-center rounded-xl px-4 text-sm font-bold transition active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50", variant === "primary" && "bg-brand text-white shadow-sm hover:bg-brand-dark", variant === "secondary" && "bg-white text-ink ring-1 ring-line hover:bg-slate-50", variant === "ghost" && "text-muted hover:bg-slate-100", variant === "danger" && "bg-red-50 text-red-600 hover:bg-red-100", className)} {...props} />;
+type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+
+export function Button({ className, variant = "primary", ...props }: Omit<MuiButtonProps, "variant" | "color"> & { variant?: ButtonVariant }): ReactElement {
+  const muiVariant = variant === "primary" || variant === "danger" ? "contained" : variant === "secondary" ? "outlined" : "text";
+  return <MuiButton className={className} variant={muiVariant} color={variant === "danger" ? "error" : "primary"} {...props} />;
 }
 
-export function Card({ className, children }: PropsWithChildren<{ className?: string }>): ReactElement {
-  return <section className={cx("rounded-3xl border border-line bg-white p-5 shadow-[0_8px_30px_rgba(31,41,72,.04)]", className)}>{children}</section>;
+export function Card({ className, children, ...props }: PropsWithChildren<PaperProps>): ReactElement {
+  return <Paper component="section" elevation={0} className={cx("rounded-[24px] border border-line/80 bg-white p-5 shadow-[0_1px_2px_rgba(29,27,32,.04)]", className)} {...props}>{children}</Paper>;
 }
 
 export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>): ReactElement {
-  return <input className={cx("h-11 w-full rounded-xl border border-line bg-white px-3 text-sm outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10", className)} {...props} />;
+  return <OutlinedInput fullWidth size="small" className={className} inputProps={props} />;
 }
 
-export function Select({ className, ...props }: SelectHTMLAttributes<HTMLSelectElement>): ReactElement {
-  return <select className={cx("h-11 w-full rounded-xl border border-line bg-white px-3 text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/10", className)} {...props} />;
+export function Select({ className, children, ...props }: NativeSelectProps): ReactElement {
+  return <FormControl fullWidth size="small" className={className}><NativeSelect input={<OutlinedInput />} {...props}>{children}</NativeSelect></FormControl>;
 }
 
 export function Progress({ value }: { value: number }): ReactElement {
-  return <div className="h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-brand transition-all" style={{ width: `${Math.min(100, Math.max(0, value))}%` }} /></div>;
+  return <LinearProgress variant="determinate" value={Math.min(100, Math.max(0, value))} sx={{ height: 8, bgcolor: "#eee8f4" }} />;
 }
 
 export function PageTitle({ eyebrow, title, children }: PropsWithChildren<{ eyebrow?: string; title: string }>): ReactElement {
-  return <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><p className="mb-1 text-xs font-bold tracking-[.16em] text-brand">{eyebrow ?? "じかん帳"}</p><h1 className="text-2xl font-black tracking-tight sm:text-3xl">{title}</h1></div>{children}</div>;
+  return <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><Typography variant="overline" color="primary" sx={{ display: "block", lineHeight: 1.6 }}>{eyebrow ?? "じかん帳"}</Typography><Typography component="h1" variant="h4">{title}</Typography></div>{children}</div>;
 }
 
 export function Empty({ children }: PropsWithChildren): ReactElement {
-  return <div className="rounded-2xl border border-dashed border-line px-5 py-10 text-center text-sm text-muted">{children}</div>;
+  return <Paper variant="outlined" className="rounded-[20px] border-dashed px-5 py-10 text-center text-sm text-muted">{children}</Paper>;
 }

@@ -10,8 +10,13 @@ export const timeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "時刻�
 export const timeEntryInputSchema = z.object({
   activityId: idSchema,
   date: dateSchema,
+  endDate: dateSchema.optional(),
   startTime: timeSchema,
   endTime: timeSchema,
+});
+export const timeEntriesQuerySchema = z.object({
+  from: dateSchema,
+  to: dateSchema,
 });
 export const goalCreateSchema = z.object({
   activityId: idSchema,
