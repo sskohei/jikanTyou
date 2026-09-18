@@ -17,6 +17,7 @@ import {
   goalUpdateSchema,
   idSchema,
   timeEntryInputSchema,
+  timeEntriesQuerySchema,
   timerStartSchema,
 } from "../shared/schemas";
 import { getPeriodBounds, jstDateFromSeconds, overlapSeconds, parseJstDateTime, TIME_ZONE } from "./services/time";
@@ -178,7 +179,26 @@ async function getEntryWithActivity(env: Env, uid: string, id: string) {
 
 app.get("/api/time-entries", authRequired, async (c) => {
   const uid = userId(c);
-  const rows = await dbFor(c.env).select({ entry: timeEntries, activityName: activities.name }).from(timeEntries).innerJoin(activities, eq(timeEntries.activityId, activities.id)).where(eq(timeEntries.userId, uid)).orderBy(desc(timeEntries.startedAt)).limit(200);
+  const from = c.req.query("from");
+  const to = c.req.query("to");
+  let condition = eq(timeEntries.userId, uid);
+  if (from !== undefined || to !== undefined) {
+    const query = timeEntriesQuerySchema.safeParse({ from, to });
+    if (!query.success) return fail(c, 400, "INVALID_DATE_RANGE", "表示期間が正しくありません。");
+    let fromSeconds: number;
+    let toSeconds: number;
+    try {
+      fromSeconds = parseJstDateTime(query.data.from, "00:00");
+      toSeconds = parseJstDateTime(query.data.to, "00:00");
+    } catch {
+      return fail(c, 400, "INVALID_DATE_RANGE", "表示期間が正しくありません。");
+    }
+    if (toSeconds <= fromSeconds || toSeconds - fromSeconds > 366 * 86400) {
+      return fail(c, 400, "INVALID_DATE_RANGE", "表示期間が正しくありません。");
+    }
+    condition = and(eq(timeEntries.userId, uid), lt(timeEntries.startedAt, toSeconds), or(isNull(timeEntries.endedAt), gt(timeEntries.endedAt, fromSeconds)))!;
+  }
+  const rows = await dbFor(c.env).select({ entry: timeEntries, activityName: activities.name }).from(timeEntries).innerJoin(activities, eq(timeEntries.activityId, activities.id)).where(condition).orderBy(desc(timeEntries.startedAt)).limit(2000);
   return ok(c, rows.map(toEntryDto));
 });
 
@@ -191,7 +211,7 @@ app.post("/api/time-entries", authRequired, jsonValidator(timeEntryInputSchema),
   let endedAt: number;
   try {
     startedAt = parseJstDateTime(input.date, input.startTime);
-    endedAt = parseJstDateTime(input.date, input.endTime);
+    endedAt = parseJstDateTime(input.endDate ?? input.date, input.endTime);
   } catch {
     return fail(c, 400, "INVALID_DATETIME", "日時が正しくありません。");
   }
@@ -215,7 +235,7 @@ app.patch("/api/time-entries/:id", authRequired, jsonValidator(timeEntryInputSch
   let endedAt: number;
   try {
     startedAt = parseJstDateTime(input.date, input.startTime);
-    endedAt = parseJstDateTime(input.date, input.endTime);
+    endedAt = parseJstDateTime(input.endDate ?? input.date, input.endTime);
   } catch {
     return fail(c, 400, "INVALID_DATETIME", "日時が正しくありません。");
   }

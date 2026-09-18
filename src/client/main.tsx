@@ -1,7 +1,12 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
+import { CssBaseline, ThemeProvider } from "@mui/material";
+import "@fontsource/roboto/latin-400.css";
+import "@fontsource/roboto/latin-500.css";
+import "@fontsource/roboto/latin-700.css";
 import { App } from "./App";
+import { appTheme } from "./theme";
 import "./styles.css";
 
-createRoot(document.getElementById("root")!).render(<StrictMode><BrowserRouter><App /></BrowserRouter></StrictMode>);
+createRoot(document.getElementById("root")!).render(<StrictMode><ThemeProvider theme={appTheme}><CssBaseline /><BrowserRouter><App /></BrowserRouter></ThemeProvider></StrictMode>);
